@@ -1,0 +1,4 @@
+[submodule "external_resources/SFML"]
+	path = external_resources/SFML
+	url = https://github.com/SFML/SFML/
+	branch = 2.4.x

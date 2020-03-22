@@ -1,0 +1,13 @@
+{
+    "files.associations": {
+        "algorithm": "cpp",
+        "iomanip": "cpp",
+        "__bit_reference": "cpp",
+        "__string": "cpp",
+        "deque": "cpp",
+        "ios": "cpp",
+        "memory": "cpp",
+        "type_traits": "cpp",
+        "vector": "cpp"
+    }
+}
