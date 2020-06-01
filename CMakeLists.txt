@@ -41,7 +41,7 @@ add_executable(Example_Project
 	${Example_Project_FILES}
 )
 
-set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -lpthread -ldl")
+set (CMAKE_CXX_LINK_EXECUTABLE "${CMAKE_CXX_LINK_EXECUTABLE} -lpthread --static")
 
 
 target_link_libraries(Example_Project sfml-system sfml-window sfml-graphics sfml-audio)
