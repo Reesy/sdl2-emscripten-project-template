@@ -20,4 +20,6 @@ endif()
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SFML)
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external_resources/SFML/include)
+
 target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-graphics)
