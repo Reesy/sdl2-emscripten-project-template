@@ -4,24 +4,20 @@ set(EXECUTABLE_NAME simple_example_application)
 
 project(SFML_PROJ LANGUAGES CXX) #set the project name and to use C++
 
-set(BUILD_SHARED_LIBS OFF)
-
-set(SFML_BUILD_EXAMPLES OFF)
-
 set(CMAKE_BUILD_TYPE Debug)
 
-add_subdirectory(external_resources/SFML build-sfml)
+set(BUILD_SHARED_LIBS OFF)
 
-find_package(SFML 2.5 COMPONENTS graphics REQUIRED)
+set(SFML_STATIC_LIBRARIES ON)
 
-#add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE src/main.cpp) # swap out depending on OS or if debug, maybe we want a window
-add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE src/main.cpp)
+set(MY_SOURCES src/main.cpp)
 
-target_link_libraries(${EXECUTABLE_NAME} sfml-graphics)
+if(WIN32) # This check detects windows even 64 bit, CMAKE just has a confusing name. 
+    add_executable(${EXECUTABLE_NAME} WIN32 ${MY_SOURCES})
+elseif(APPLE)
+    add_executable(${EXECUTABLE_NAME} MACOSX_BUNDLE ${MY_SOURCES})
+endif()
 
-# target_include_directories(${EXECUTABLE_NAME} in)
-# #include project owned headers
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SFML)
 
-# #including headers that come with our external dependency SFML
-# include_directories(${CMAKE_CURRENT_SOURCE_DIR}/external_resources/SFML/include)
+target_link_libraries(${EXECUTABLE_NAME} PRIVATE sfml-graphics)
