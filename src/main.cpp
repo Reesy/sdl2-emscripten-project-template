@@ -1,10 +1,20 @@
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 
 int main()
 {
     sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
+
+    sf::Music music;
+
+    if (!music.openFromFile("resources/music.wav"))
+    {
+        return -1;
+    }
+    
+    music.play();
 
     while (window.isOpen())
     {
