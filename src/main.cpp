@@ -2,9 +2,9 @@
 // This should display a white screen for 2 seconds
 // compile with: clang++ main.cpp -o hello_sdl2 -lSDL2
 // run with: ./hello_sdl2
-#include <SDL.h>
 #include <stdio.h>
-
+#include <SDL.h>
+#undef main
 #define SCREEN_WIDTH 640
 #define SCREEN_HEIGHT 480
 
@@ -26,7 +26,7 @@ int main(int argc, char* args[]) {
     return 1;
   }
   screenSurface = SDL_GetWindowSurface(window);
-  SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 0xFF, 0xFF, 0xFF));
+  SDL_FillRect(screenSurface, NULL, SDL_MapRGB(screenSurface->format, 100, 0xFF, 0xFF));
   SDL_UpdateWindowSurface(window);
   SDL_Delay(2000);
   SDL_DestroyWindow(window);
