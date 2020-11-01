@@ -20,13 +20,19 @@ This project imports it's dependency on SFML via a git submodule in the external
 To build a release (on OSX):
 
 ```
-cmake .
+cmake . -B build
 make
+```
+
+To build for browser with Emscripten (requires emscripten installed and on the path): 
+
+```
+emcmake cmake . -B build 
 ```
 
 To build with debug symbols (on OSX):
 ```
-cmake -DCMAKE_BUILD_TYPE=Debug .
+cmake -DCMAKE_BUILD_TYPE=Debug . -B build
 make
 ```
 

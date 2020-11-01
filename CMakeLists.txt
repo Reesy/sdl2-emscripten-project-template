@@ -12,10 +12,20 @@ set(MY_RESOURCES resources)
 
 add_executable(${EXECUTABLE_NAME} ${MY_SOURCES})
 
-file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
-
-add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror)
+if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${USE_FLAGS}")
+    file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR})
+else()
+    file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
+    add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror)
+endif()
 
 include_directories(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror/include)
 
-target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL2-static)
+if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    target_link_libraries(${EXECUTABLE_NAME})
+else()
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL2-static)
+endif()
+
