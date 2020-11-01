@@ -44,3 +44,14 @@ This project comes with a .vscode folder prebundled to make debugging easier, fo
 \*CodeLLDB is only recommended for debugging on modern OSX versions
 
 SDL2 can be found https://www.libsdl.org/
+
+
+Emscripten command 
+
+    ```emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -O3 -o index.js```
+
+    running in small httpserver with Python 2: ```python -m SimpleHTTPServer 8080``` 
+
+
+
+Credit for the code in main from: http://main.lv/writeup/web_assembly_sdl_example.md#toc-1   
