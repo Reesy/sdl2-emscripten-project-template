@@ -1,145 +1,159 @@
-#include <stdio.h>
-#include <stdlib.h>
+/*This source code copyrighted by Lazy Foo' Productions (2004-2020)
+and may not be redistributed without written permission.*/
 
-#if __EMSCRIPTEN__
-#include <emscripten/emscripten.h>
-#include <SDL2/SDL.h>
-#else
+//Using SDL and standard IO
 #include <SDL.h>
-#endif
-
-#define SCREEN_WIDTH  200
-#define SCREEN_HEIGHT 200
-
-SDL_Window *window = NULL;
-SDL_Renderer *renderer = NULL;
-
-#define MAX(a,b) ((a) > (b) ? a : b)
-#define MIN(a,b) ((a) < (b) ? a : b)
-
-int posX=0;
-int posY=0;
-int sizeW=20;
-int sizeH=20;
-
-static int quit = 0;
-
-void render()
-{
-
-    SDL_Rect r_scr;
-    r_scr.x = posX;
-    r_scr.y = posY;
-    r_scr.w = sizeW;
-    r_scr.h = sizeH;
-    SDL_SetRenderDrawColor( renderer, 0x00, 0x00, 0x00, 0xFF );
-    SDL_RenderClear(renderer);
-
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0x00, 0x00);
-    SDL_RenderDrawRect(renderer, &r_scr);
-    SDL_RenderPresent(renderer);
-}
+#include <stdio.h>
 
 #if __EMSCRIPTEN__
-void main_tick() {
+	#include <emscripten/emscripten.h>
+	#include <SDL2/SDL.h>
 #else
-int main_tick() {
+	#include <SDL.h>
 #endif
 
-    SDL_Event event;
+//Screen dimension constants
+const int SCREEN_WIDTH = 640;
+const int SCREEN_HEIGHT = 480;
 
-        while (SDL_PollEvent(&event))
-        {
-            switch (event.type)
-            {
-            case SDL_QUIT:
-            {
-                quit = 1;
-                break;
-            }
-            case SDL_KEYDOWN:
-            {
-                switch (event.key.keysym.sym)
-                {
-                case SDLK_UP:
-                {
-                    if (posY>=20)
-                    {
-                        posY-=20;
-                    }
-                    break;
-                }
-                case SDLK_DOWN:
-                {
-                    if (posY+sizeH<SCREEN_HEIGHT)
-                    {
-                        posY += 20;
-                    }
-                    break;
-                }
-                case SDLK_LEFT:
-                {
-                    if (posX>=20)
-                    {
-                        posX-=20;
-                    }
-                    break;
-                }
-                case SDLK_RIGHT:
-                {
-                    if (posX+sizeW<SCREEN_WIDTH)
-                    {
-                        posX+=20;
-                    }
-                    break;
-                }
-                }
-                break;
-            }
-            }
+//Starts up SDL and creates window
+bool init();
 
-        }
+//Loads media
+bool loadMedia();
 
+//Frees media and shuts down SDL
+void close();
 
-    render();
-    SDL_UpdateWindowSurface(window);
+//Main loop of the application
+void mainLoop();
 
-#if !__EMSCRIPTEN__
-    return 0;
-#endif
+//The window we'll be rendering to
+SDL_Window* gWindow = NULL;
+	
+//The surface contained by the window
+SDL_Surface* gScreenSurface = NULL;
+
+//The image we will load and show on the screen
+SDL_Surface* gXOut = NULL;
+
+bool quit = false;
+
+bool init()
+{
+	//Initialization flag
+	bool success = true;
+
+	//Initialize SDL
+	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
+	{
+		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
+		success = false;
+	}
+	else
+	{
+		//Create window
+		gWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
+		if( gWindow == NULL )
+		{
+			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
+			success = false;
+		}
+		else
+		{
+			//Get window surface
+			gScreenSurface = SDL_GetWindowSurface( gWindow );
+		}
+	}
+
+	return success;
 }
 
-void main_loop()
+bool loadMedia()
 {
+	//Loading success flag
+	bool success = true;
 
-#if __EMSCRIPTEN__
-    emscripten_set_main_loop(main_tick, -1, 1);
-#else
-    while (0 == quit)
-    {
-        main_tick();
-    }
-#endif
+	//Load splash image
+	gXOut = SDL_LoadBMP( "resources/hello_world.bmp" );
+	if( gXOut == NULL )
+	{
+		printf( "Unable to load image %s! SDL Error: %s\n", "resources/hello_world.bmp", SDL_GetError() );
+		success = false;
+	}
+
+	return success;
 }
 
-int main()
+void close()
 {
-    SDL_Init(SDL_INIT_VIDEO);
+	//Deallocate surface
+	SDL_FreeSurface( gXOut );
+	gXOut = NULL;
 
-    window = SDL_CreateWindow(
-        "WEBASM",
-        SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        SCREEN_WIDTH, SCREEN_HEIGHT,
-        SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+	//Destroy window
+	SDL_DestroyWindow( gWindow );
+	gWindow = NULL;
 
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_SetRenderDrawColor(renderer, 0xff, 0xff, 0xff, 0xff);
+	//Quit SDL subsystems
+	SDL_Quit();
+}
 
-    main_loop();
+void mainLoop()
+{
+	//Event handler
+	SDL_Event e;
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
-    SDL_Quit();
 
-    return 0;
+	//Handle events on queue
+	while( SDL_PollEvent( &e ) != 0 )
+	{
+		//User requests quit
+		if( e.type == SDL_QUIT )
+		{
+			quit = true;
+		}
+	}
+
+	//Apply the image
+	SDL_BlitSurface( gXOut, NULL, gScreenSurface, NULL );
+
+	//Update the surface
+	SDL_UpdateWindowSurface( gWindow );
+	
+}
+
+int main( int argc, char* args[] )
+{
+	//Start up SDL and create window
+	if( !init() )
+	{
+		printf( "Failed to initialize!\n" );
+	}
+	else
+	{
+		//Load media
+		if( !loadMedia() )
+		{
+			printf( "Failed to load media!\n" );
+		}
+		else
+		{			
+
+			#if __EMSCRIPTEN__
+				emscripten_set_main_loop(mainLoop, -1, 1);
+			#else
+				while (quit != true)
+				{
+					mainLoop();
+				}
+			#endif
+
+		}
+	}
+
+	//Free resources and close SDL
+	close();
+
+	return 0;
 }
