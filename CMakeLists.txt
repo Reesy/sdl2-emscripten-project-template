@@ -10,7 +10,9 @@ set(MY_SOURCES src/main.cpp)
 
 set(MY_RESOURCES resources)
 
-add_executable(${EXECUTABLE_NAME} ${MY_SOURCES})
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/project_files/")
+
+add_executable(${EXECUTABLE_NAME} WIN32 ${MY_SOURCES})
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1 --preload-file resources/hello_world.bmp")
@@ -20,13 +22,15 @@ if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 else()
     file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
     add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror)
+    add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SDL_image)
 endif()
 
-include_directories(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror/include)
+#include_directories(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror/include)
+#include_directories(${PROJECT_SOURCE_DIR}/external_resources/SDL_image)
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     target_link_libraries(${EXECUTABLE_NAME})
 else()
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL2-static)
+    target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL2-static SDL2_image)
 endif()
 
