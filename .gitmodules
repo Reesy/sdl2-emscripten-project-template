@@ -1,3 +1,6 @@
 [submodule "external_resources/SDL-mirror"]
 	path = external_resources/SDL-mirror
 	url = https://github.com/spurious/SDL-mirror.git
+[submodule "external_resources/SDL_image"]
+	path = external_resources/SDL_image
+	url = https://github.com/SDL-mirror/SDL_image
