@@ -2,7 +2,6 @@
 and may not be redistributed without written permission.*/
 
 //Using SDL and standard IO
-#include <SDL.h>
 #include <stdio.h>
 
 #if __EMSCRIPTEN__

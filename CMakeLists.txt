@@ -4,33 +4,55 @@ set(EXECUTABLE_NAME simple_sdl2_application)
 
 project(SDL2_example LANGUAGES CXX) #set the project name and to use C++
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
 set(CMAKE_BUILD_TYPE Debug)
 
 set(MY_SOURCES src/main.cpp)
 
 set(MY_RESOURCES resources)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/project_files/")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
-add_executable(${EXECUTABLE_NAME} WIN32 ${MY_SOURCES})
+find_package(SDL2 REQUIRED)
 
-if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+find_package(SDL2_image REQUIRED)
+
+include_directories(${SDL2_IMAGE_INCLUDE_DIR})
+
+include_directories(${SDL2_INCLUDE_DIR})
+
+add_executable(${EXECUTABLE_NAME} ${MY_SOURCES})
+
+file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+
+if (MSVC)
+	if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+		string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+	else()
+		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1 --preload-file resources/hello_world.bmp")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${USE_FLAGS}")
-    file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR})
-    file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
+    file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR}/bin)
 else()
-    file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
-    add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror)
-    add_subdirectory(${PROJECT_SOURCE_DIR}/external_resources/SDL_image)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -std=c++11")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -g")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE} -O2")
 endif()
-
-#include_directories(${PROJECT_SOURCE_DIR}/external_resources/SDL-mirror/include)
-#include_directories(${PROJECT_SOURCE_DIR}/external_resources/SDL_image)
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     target_link_libraries(${EXECUTABLE_NAME})
 else()
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE SDL2-static SDL2_image)
+    target_link_libraries(${EXECUTABLE_NAME} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
 endif()
+
+# if (NOT ${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
+# 	file(COPY "${PROJECT_SOURCE_DIR}/res" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+# endif()
+
+
+# target_link_libraries(Lesson4 ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
+# install(TARGETS Lesson4 RUNTIME DESTINATION ${BIN_DIR})
 
