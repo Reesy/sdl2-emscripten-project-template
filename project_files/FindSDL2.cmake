@@ -1,1 +1,0 @@
-add_library(SDL2::SDL2 ALIAS SDL2)
