@@ -7,10 +7,10 @@ This is an example project which will let you create SDL2 projects quickly, it h
 How to clone:
 
 ```
-git clone --recurse-submodules https://github.com/Reesy/sdl2_vscode_project_template
+git clone https://github.com/Reesy/sdl2_vscode_project_template
 ```
 
-This project imports it's dependency on SFML via a git submodule in the external_resources folder.
+This project has a dependency on SDL2 and SDL_image, when building natively these dependencies must be installed on the target machine and they can be discovered through the FindSDL cmake files. When building through emscripten the SDL and SDL2 ports are required (they should exist by default)
 
 <dl>
     <dt> Requirements<dt>
@@ -52,9 +52,8 @@ This project comes with a .vscode folder prebundled to make debugging easier, fo
 SDL2 can be found https://www.libsdl.org/
 
 
-Emscripten command 
-
-    ```emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -O3 -o index.js```
+Emscripten command (manually):
+    ```emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -O3 -o index.js```
 
     running in small httpserver with Python 2: ```python -m SimpleHTTPServer 8080``` 
 
