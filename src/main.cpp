@@ -7,8 +7,10 @@ and may not be redistributed without written permission.*/
 #if __EMSCRIPTEN__
 	#include <emscripten/emscripten.h>
 	#include <SDL2/SDL.h>
+	#include <SDL2/SDL_image.h>
 #else
 	#include <SDL.h>
+	#include <SDL_image.h>
 #endif
 
 //Screen dimension constants

@@ -4,8 +4,6 @@ set(EXECUTABLE_NAME simple_sdl2_application)
 
 project(SDL2_example LANGUAGES CXX) #set the project name and to use C++
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-
 set(CMAKE_BUILD_TYPE Debug)
 
 set(MY_SOURCES src/main.cpp)
@@ -14,17 +12,19 @@ set(MY_RESOURCES resources)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake")
 
-find_package(SDL2 REQUIRED)
+if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
+    find_package(SDL2 REQUIRED)
 
-find_package(SDL2_image REQUIRED)
+    find_package(SDL2_image REQUIRED)
 
-include_directories(${SDL2_IMAGE_INCLUDE_DIR})
+    include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 
-include_directories(${SDL2_INCLUDE_DIR})
+    include_directories(${SDL2_INCLUDE_DIR})
+endif()
 
 add_executable(${EXECUTABLE_NAME} ${MY_SOURCES})
 
-file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR}/bin)
+file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
 
 if (MSVC)
 	if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
@@ -33,9 +33,9 @@ if (MSVC)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
 elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
-    set(USE_FLAGS "-s USE_SDL=2 -s USE_FREETYPE=1 --preload-file resources/hello_world.bmp")
+    set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 --preload-file resources/hello_world.bmp")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${USE_FLAGS}")
-    file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR}/bin)
+    file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR})
 else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -std=c++11")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG} -g")
