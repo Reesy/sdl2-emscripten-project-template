@@ -33,7 +33,7 @@ if (MSVC)
 		set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
     endif()
 elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
-    set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s USE_FREETYPE=1 --preload-file resources/hello_world.bmp")
+    set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"png\"]' -s USE_FREETYPE=1 --preload-file resources/example_texture.png")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${USE_FLAGS}")
     file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR})
 else()
@@ -47,12 +47,3 @@ if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
 else()
     target_link_libraries(${EXECUTABLE_NAME} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
 endif()
-
-# if (NOT ${PROJECT_SOURCE_DIR} STREQUAL ${CMAKE_CURRENT_BINARY_DIR})
-# 	file(COPY "${PROJECT_SOURCE_DIR}/res" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-# endif()
-
-
-# target_link_libraries(Lesson4 ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY})
-# install(TARGETS Lesson4 RUNTIME DESTINATION ${BIN_DIR})
-

@@ -59,4 +59,6 @@ Emscripten command (manually):
 
 
 
-Credit for the code in main from: http://main.lv/writeup/web_assembly_sdl_example.md#toc-1   
+Credit for the code in main from: 
+    1. http://main.lv/writeup/web_assembly_sdl_example.md#toc-1   
+    2. https://www.willusher.io/sdl2%20tutorials/2013/08/27/lesson-5-clipping-sprite-sheets 

@@ -1,8 +1,6 @@
-/*This source code copyrighted by Lazy Foo' Productions (2004-2020)
-and may not be redistributed without written permission.*/
-
-//Using SDL and standard IO
 #include <stdio.h>
+#include <string> 
+#include <iostream>
 
 #if __EMSCRIPTEN__
 	#include <emscripten/emscripten.h>
@@ -13,148 +11,205 @@ and may not be redistributed without written permission.*/
 	#include <SDL_image.h>
 #endif
 
-//Screen dimension constants
-const int SCREEN_WIDTH = 640;
-const int SCREEN_HEIGHT = 480;
+SDL_Window *window = NULL;
+SDL_Renderer *renderer = NULL;
+SDL_Texture *image = NULL;
 
-//Starts up SDL and creates window
-bool init();
-
-//Loads media
-bool loadMedia();
-
-//Frees media and shuts down SDL
-void close();
-
-//Main loop of the application
-void mainLoop();
-
-//The window we'll be rendering to
-SDL_Window* gWindow = NULL;
-	
-//The surface contained by the window
-SDL_Surface* gScreenSurface = NULL;
-
-//The image we will load and show on the screen
-SDL_Surface* gXOut = NULL;
-
+//Setup the clips for our image
+SDL_Rect clips[4];
+int useClip = 0;
 bool quit = false;
 
-bool init()
+const int SCREEN_WIDTH  = 640;
+const int SCREEN_HEIGHT = 480;
+
+//iW and iH are the clip width and height
+//We'll be drawing only clips so get a center position for the w/h of a clip
+int iW = 100, iH = 100;
+int x = SCREEN_WIDTH / 2 - iW / 2;
+int y = SCREEN_HEIGHT / 2 - iH / 2;
+
+
+/*
+ * Log an SDL error with some error message to the output stream of our choice
+ * @param os The output stream to write the message too
+ * @param msg The error message to write, format will be msg error: SDL_GetError()
+ */
+void logSDLError(std::ostream &os, const std::string &msg)
 {
-	//Initialization flag
-	bool success = true;
-
-	//Initialize SDL
-	if( SDL_Init( SDL_INIT_VIDEO ) < 0 )
-	{
-		printf( "SDL could not initialize! SDL_Error: %s\n", SDL_GetError() );
-		success = false;
-	}
-	else
-	{
-		//Create window
-		gWindow = SDL_CreateWindow( "SDL Tutorial", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN );
-		if( gWindow == NULL )
-		{
-			printf( "Window could not be created! SDL_Error: %s\n", SDL_GetError() );
-			success = false;
-		}
-		else
-		{
-			//Get window surface
-			gScreenSurface = SDL_GetWindowSurface( gWindow );
-		}
-	}
-
-	return success;
+	os << msg << " error: " << SDL_GetError() << std::endl;
 }
-
-bool loadMedia()
+/*
+ * Loads an image into a texture on the rendering device
+ * @param file The image file to load
+ * @param ren The renderer to load the texture onto
+ * @return the loaded texture, or nullptr if something went wrong.
+ */
+SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren)
 {
-	//Loading success flag
-	bool success = true;
-
-	//Load splash image
-	gXOut = SDL_LoadBMP( "resources/hello_world.bmp" );
-	if( gXOut == NULL )
+	SDL_Texture *texture = IMG_LoadTexture(ren, file.c_str());
+	if (texture == nullptr)
 	{
-		printf( "Unable to load image %s! SDL Error: %s\n", "resources/hello_world.bmp", SDL_GetError() );
-		success = false;
+		logSDLError(std::cout, "LoadTexture");
 	}
-
-	return success;
+	return texture;
 }
-
-void close()
+/*
+ * Draw an SDL_Texture to an SDL_Renderer at some destination rect
+ * taking a clip of the texture if desired
+ * @param tex The source texture we want to draw
+ * @param rend The renderer we want to draw too
+ * @param dst The destination rectangle to render the texture too
+ * @param clip The sub-section of the texture to draw (clipping rect)
+ *		default of nullptr draws the entire texture
+ */
+void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, SDL_Rect dst, SDL_Rect *clip = nullptr)
 {
-	//Deallocate surface
-	SDL_FreeSurface( gXOut );
-	gXOut = NULL;
-
-	//Destroy window
-	SDL_DestroyWindow( gWindow );
-	gWindow = NULL;
-
-	//Quit SDL subsystems
-	SDL_Quit();
+	SDL_RenderCopy(ren, tex, clip, &dst);
+}
+/*
+ * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
+ * the texture's width and height and taking a clip of the texture if desired
+ * If a clip is passed, the clip's width and height will be used instead of the texture's
+ * @param tex The source texture we want to draw
+ * @param rend The renderer we want to draw too
+ * @param x The x coordinate to draw too
+ * @param y The y coordinate to draw too
+ * @param clip The sub-section of the texture to draw (clipping rect)
+ *		default of nullptr draws the entire texture
+ */
+void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, SDL_Rect *clip = nullptr)
+{
+	SDL_Rect dst;
+	dst.x = x;
+	dst.y = y;
+	if (clip != nullptr)
+	{
+		dst.w = clip->w;
+		dst.h = clip->h;
+	}
+	else 
+	{
+		SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+	}
+	renderTexture(tex, ren, dst, clip);
 }
 
 void mainLoop()
 {
-	//Event handler
 	SDL_Event e;
 
-
-	//Handle events on queue
-	while( SDL_PollEvent( &e ) != 0 )
+	//Event Polling
+	while (SDL_PollEvent(&e))
 	{
-		//User requests quit
-		if( e.type == SDL_QUIT )
+		if (e.type == SDL_QUIT)
 		{
 			quit = true;
 		}
+
+		//Use number input to select which clip should be drawn
+		if (e.type == SDL_KEYDOWN)
+		{
+			switch (e.key.keysym.sym)
+			{
+				case SDLK_1:
+				case SDLK_KP_1:
+					useClip = 0;
+					break;
+				case SDLK_2:
+				case SDLK_KP_2:
+					useClip = 1;
+					break;
+				case SDLK_3:
+				case SDLK_KP_3:
+					useClip = 2;
+					break;
+				case SDLK_4:
+				case SDLK_KP_4:
+					useClip = 3;
+					break;
+				case SDLK_ESCAPE:
+					quit = true;
+					break;
+				default:
+					break;
+			}
+		}
 	}
-
-	//Apply the image
-	SDL_BlitSurface( gXOut, NULL, gScreenSurface, NULL );
-
-	//Update the surface
-	SDL_UpdateWindowSurface( gWindow );
+	//Rendering
+	SDL_RenderClear(renderer);
+	//Draw the image
+	renderTexture(image, renderer, x, y, &clips[useClip]);
+	//Update the screen
+	SDL_RenderPresent(renderer);
 	
 }
 
-int main( int argc, char* args[] )
+int main(int, char**)
 {
-	//Start up SDL and create window
-	if( !init() )
-	{
-		printf( "Failed to initialize!\n" );
+	//Start up SDL and make sure it went ok
+	if (SDL_Init(SDL_INIT_VIDEO) != 0){
+		logSDLError(std::cout, "SDL_Init");
+		return 1;
 	}
-	else
+
+	//Setup our window and renderer
+	window = SDL_CreateWindow("Lesson 5", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	if (window == nullptr)
 	{
-		//Load media
-		if( !loadMedia() )
+		logSDLError(std::cout, "CreateWindow");
+		SDL_Quit();
+		return 1;
+	}
+
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	if (renderer == nullptr)
+	{
+		logSDLError(std::cout, "CreateRenderer");
+		window = NULL;
+		SDL_Quit();
+		return 1;
+	}
+
+	image = loadTexture("resources/example_texture.png", renderer);
+	if (image == nullptr)
+	{
+		image = NULL;
+		renderer = NULL;
+		window = NULL;
+		IMG_Quit();
+		SDL_Quit();
+		return 1;
+	}
+
+	//Since our clips our uniform in size we can generate a list of their
+	//positions using some math (the specifics of this are covered in the lesson)
+	for (int i = 0; i < 4; ++i)
+	{
+		clips[i].x = i / 2 * iW;
+		clips[i].y = i % 2 * iH;
+		clips[i].w = iW;
+		clips[i].h = iH;
+	}
+	
+	#if __EMSCRIPTEN__
+		emscripten_set_main_loop(mainLoop, -1, 1);
+	#else
+		while (quit != true)
 		{
-			printf( "Failed to load media!\n" );
+			mainLoop();
 		}
-		else
-		{			
+	#endif
 
-			#if __EMSCRIPTEN__
-				emscripten_set_main_loop(mainLoop, -1, 1);
-			#else
-				while (quit != true)
-				{
-					mainLoop();
-				}
-			#endif
 
-		}
-	}
-
-	//Free resources and close SDL
-	close();
+	SDL_DestroyTexture( image );
+	SDL_DestroyRenderer(renderer );
+	SDL_DestroyWindow( window );
+	image = NULL;
+	renderer = NULL;
+	window = NULL;
+	IMG_Quit();
+	SDL_Quit();
 
 	return 0;
 }
