@@ -8,13 +8,12 @@
             "name": "Debug",
             "type": "lldb",
             "request": "launch",
-            "program": "Example_Project",
+            "program": "./build/simple_sdl2_application",
             "cwd": "${workspaceRoot}",
             "args": [
                 "-arg1",
                 "-arg2"
-            ],
-            "preLaunchTask": "make"
+            ]   
         }
     ]
 }
