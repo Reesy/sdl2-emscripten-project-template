@@ -13,185 +13,176 @@
 
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
-SDL_Texture *image = NULL;
+SDL_Event *event = NULL;
+SDL_Texture *circle = NULL;
+SDL_Rect textureRect;
+SDL_Rect positionRect;
 
-//Setup the clips for our image
-SDL_Rect clips[4];
-int useClip = 0;
 bool quit = false;
+bool falling = true;
 
 const int SCREEN_WIDTH  = 640;
 const int SCREEN_HEIGHT = 480;
 
-//iW and iH are the clip width and height
-//We'll be drawing only clips so get a center position for the w/h of a clip
-int iW = 100, iH = 100;
-int x = SCREEN_WIDTH / 2 - iW / 2;
-int y = SCREEN_HEIGHT / 2 - iH / 2;
+double dt = 10; //The interval between updating the physics. IE update physics every 100th of a second
+double currentTime = SDL_GetTicks(); // in miliseconds
+double accumulator = 0.0; //This will hold the accumulation of physics steps (any time left over if the graphics renders faster than the physics simulates)
 
+double velocity = 1;    
 
-/*
- * Log an SDL error with some error message to the output stream of our choice
- * @param os The output stream to write the message too
- * @param msg The error message to write, format will be msg error: SDL_GetError()
- */
-void logSDLError(std::ostream &os, const std::string &msg)
-{
-	os << msg << " error: " << SDL_GetError() << std::endl;
-}
-/*
- * Loads an image into a texture on the rendering device
- * @param file The image file to load
- * @param ren The renderer to load the texture onto
- * @return the loaded texture, or nullptr if something went wrong.
- */
 SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren)
 {
 	SDL_Texture *texture = IMG_LoadTexture(ren, file.c_str());
 	if (texture == nullptr)
 	{
-		logSDLError(std::cout, "LoadTexture");
+		std::cout << "Could not load texture" << std::endl;
 	}
 	return texture;
 }
-/*
- * Draw an SDL_Texture to an SDL_Renderer at some destination rect
- * taking a clip of the texture if desired
- * @param tex The source texture we want to draw
- * @param rend The renderer we want to draw too
- * @param dst The destination rectangle to render the texture too
- * @param clip The sub-section of the texture to draw (clipping rect)
- *		default of nullptr draws the entire texture
- */
-void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, SDL_Rect dst, SDL_Rect *clip = nullptr)
+
+void init()
 {
-	SDL_RenderCopy(ren, tex, clip, &dst);
-}
-/*
- * Draw an SDL_Texture to an SDL_Renderer at position x, y, preserving
- * the texture's width and height and taking a clip of the texture if desired
- * If a clip is passed, the clip's width and height will be used instead of the texture's
- * @param tex The source texture we want to draw
- * @param rend The renderer we want to draw too
- * @param x The x coordinate to draw too
- * @param y The y coordinate to draw too
- * @param clip The sub-section of the texture to draw (clipping rect)
- *		default of nullptr draws the entire texture
- */
-void renderTexture(SDL_Texture *tex, SDL_Renderer *ren, int x, int y, SDL_Rect *clip = nullptr)
-{
-	SDL_Rect dst;
-	dst.x = x;
-	dst.y = y;
-	if (clip != nullptr)
+	
+	//Start up SDL and make sure it went ok
+	if (SDL_Init(SDL_INIT_VIDEO) != 0)
 	{
-		dst.w = clip->w;
-		dst.h = clip->h;
+		throw("SDL failed to initialise");
+	}
+
+	window = SDL_CreateWindow("SDL2 Example!!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+
+	if (window == nullptr)
+	{
+		SDL_Quit();
+		throw("Failed to create window");
+	}
+
+	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	
+	if (renderer == nullptr)
+	{
+		window = NULL;
+		SDL_Quit();
+		throw("Failed to create renderer");
+	}
+
+	event = new SDL_Event();
+
+	circle = loadTexture("resources/example_texture.png", renderer);
+	
+	//This rectangle represents where from the circles.png we should grab the texture. 
+	//X, Y, W, H means that we grab 100 x 100 pixels from the top left of the target image (when we use SDL_RenderCopy)
+	textureRect = {0, 0, 100, 100};
+	
+	//This represents where on the screen we will put the circle texture and it's size, 
+	//this will initialise it at the top left and the image will be squished to 15 x 15
+	positionRect = {(SCREEN_WIDTH / 2) - 7,  // X position - this is overcomplicated but it just puts the circle in the center of the screen.
+					0,                       // Y position - sets the circle at the top of the screen 
+					15,                      // Sets the height of the circle
+					15};                     // Sets the weidth of the circle
+}
+
+void input()
+{
+	if (event->type == SDL_QUIT)
+	{
+		quit = true;
+	}
+
+	if (event->type == SDL_KEYDOWN)
+	{
+		switch (event->key.keysym.sym)
+		{
+			case SDLK_KP_A:
+				
+				break;
+			case SDLK_KP_D:
+				
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+
+
+void update(double dt)
+{
+
+	if (positionRect.y <= 0)
+	{
+		falling = true;
+	};
+
+	if (positionRect.y >= (SCREEN_HEIGHT - positionRect.h))
+	{	
+		falling = false;
+	};
+
+	if (falling)
+	{
+		positionRect.y += velocity * dt;
 	}
 	else 
 	{
-		SDL_QueryTexture(tex, NULL, NULL, &dst.w, &dst.h);
+	
+		positionRect.y -= velocity * dt;
+		
 	}
-	renderTexture(tex, ren, dst, clip);
+
+}
+
+
+void render()
+{
+	//clears previous frame.
+	SDL_RenderClear(renderer);
+	
+	//Set up the circle on the next render frame.
+	SDL_RenderCopy(renderer, circle, &textureRect, &positionRect);
+
+	//Renders current frame.
+	SDL_RenderPresent(renderer);
 }
 
 void mainLoop()
 {
-	SDL_Event e;
+	double newTime = SDL_GetTicks(); //in miliseconds
+	double frameTime = newTime - currentTime; //Essentially stores how long the previous frame ran for in miliseconds
+	
+	//limits frame time to 100th of a second
+	if (frameTime > 250) 
+	{
+		std::cout << "UPPER BOUND HIT, LAG ENCOUNTERED" << std::endl;
+		frameTime = 250; //Upper bound on the time between processing this loop. If physics simulation is slower than render calculation then the game could halt.
+	}
+
+	currentTime = newTime; 
+
+	accumulator += frameTime; 
+
+	while ( accumulator >= dt)
+	{
+		update(dt); //consumes dt 
+		accumulator -= dt;
+	};
+	
+	render(); //Produces dt (takes time to calculate)
 
 	//Event Polling
-	while (SDL_PollEvent(&e))
+	while (SDL_PollEvent(event))
 	{
-		if (e.type == SDL_QUIT)
-		{
-			quit = true;
-		}
-
-		//Use number input to select which clip should be drawn
-		if (e.type == SDL_KEYDOWN)
-		{
-			switch (e.key.keysym.sym)
-			{
-				case SDLK_1:
-				case SDLK_KP_1:
-					useClip = 0;
-					break;
-				case SDLK_2:
-				case SDLK_KP_2:
-					useClip = 1;
-					break;
-				case SDLK_3:
-				case SDLK_KP_3:
-					useClip = 2;
-					break;
-				case SDLK_4:
-				case SDLK_KP_4:
-					useClip = 3;
-					break;
-				case SDLK_ESCAPE:
-					quit = true;
-					break;
-				default:
-					break;
-			}
-		}
+		input();
 	}
-	//Rendering
-	SDL_RenderClear(renderer);
-	//Draw the image
-	renderTexture(image, renderer, x, y, &clips[useClip]);
-	//Update the screen
-	SDL_RenderPresent(renderer);
-	
 }
 
 int main(int, char**)
 {
-	//Start up SDL and make sure it went ok
-	if (SDL_Init(SDL_INIT_VIDEO) != 0){
-		logSDLError(std::cout, "SDL_Init");
-		return 1;
-	}
+	init();
 
-	//Setup our window and renderer
-	window = SDL_CreateWindow("Lesson 5", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
-	if (window == nullptr)
-	{
-		logSDLError(std::cout, "CreateWindow");
-		SDL_Quit();
-		return 1;
-	}
 
-	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-	if (renderer == nullptr)
-	{
-		logSDLError(std::cout, "CreateRenderer");
-		window = NULL;
-		SDL_Quit();
-		return 1;
-	}
-
-	image = loadTexture("resources/example_texture.png", renderer);
-	if (image == nullptr)
-	{
-		image = NULL;
-		renderer = NULL;
-		window = NULL;
-		IMG_Quit();
-		SDL_Quit();
-		return 1;
-	}
-
-	//Since our clips our uniform in size we can generate a list of their
-	//positions using some math (the specifics of this are covered in the lesson)
-	for (int i = 0; i < 4; ++i)
-	{
-		clips[i].x = i / 2 * iW;
-		clips[i].y = i % 2 * iH;
-		clips[i].w = iW;
-		clips[i].h = iH;
-	}
-	
+	//When creating a native app (.exe on windows or sh on OSX/Linux this will directly call mainLoop. when running in browser emscripten deals with calls to the main method)
 	#if __EMSCRIPTEN__
 		emscripten_set_main_loop(mainLoop, -1, 1);
 	#else
@@ -201,15 +192,12 @@ int main(int, char**)
 		}
 	#endif
 
-
-	SDL_DestroyTexture( image );
 	SDL_DestroyRenderer(renderer );
 	SDL_DestroyWindow( window );
-	image = NULL;
 	renderer = NULL;
 	window = NULL;
 	IMG_Quit();
 	SDL_Quit();
 
 	return 0;
-}
+};
