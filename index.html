@@ -6,17 +6,15 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 </head>
 
-<body style="background-color: black;">
-    <div style="display: block; 
-                margin-left: auto;
-                margin-right: auto;
-                padding: 0;
-                width:max-content;
-                border-color: red;
-                border-style: solid;">
-        <!-- Create the canvas that the C++ code will draw into -->
-        <canvas id="canvas" oncontextmenu="event.preventDefault()"></canvas>
-    </div>
+<body style="padding:0;
+             margin:0;
+             overflow: hidden;">
+    <!-- Create the canvas that the C++ code will draw into -->
+    <canvas id="canvas" 
+            oncontextmenu="event.preventDefault()"
+            style="width:100vw;
+                    height:100vh"></canvas>
+    
     <!-- Allow the C++ to access the canvas element --> 
     <script type='text/javascript'>
         var Module = {

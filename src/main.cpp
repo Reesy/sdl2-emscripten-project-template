@@ -11,6 +11,18 @@
 	#include <SDL_image.h>
 #endif
 
+#if __EMSCRIPTEN__
+
+EM_JS(int, canvas_get_width, (), {
+  return canvas.width;
+});
+
+EM_JS(int, canvas_get_height, (), {
+  return canvas.height;
+});
+
+#endif
+
 SDL_Window *window = NULL;
 SDL_Renderer *renderer = NULL;
 SDL_Event *event = NULL;
@@ -173,6 +185,12 @@ void mainLoop()
 		std::cout << "UPPER BOUND HIT, LAG ENCOUNTERED" << std::endl;
 		frameTime = 250; //Upper bound on the time between processing this loop. If physics simulation is slower than render calculation then the game could halt.
 	}
+
+	#if __EMSCRIPTEN__
+	int canvasWidth = canvas_get_width();
+	std::cout << "The canvas width was: " << canvasWidth << std::endl;
+	#endif
+
 
 	currentTime = newTime; 
 
