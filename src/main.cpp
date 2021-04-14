@@ -21,8 +21,8 @@ SDL_Rect positionRect;
 bool quit = false;
 bool falling = true;
 
-const int SCREEN_WIDTH  = 640;
-const int SCREEN_HEIGHT = 480;
+int SCREEN_WIDTH = 640; //640;
+int SCREEN_HEIGHT = 480;//480;
 
 double dt = 10; //The interval between updating the physics. IE update physics every 100th of a second
 double currentTime = SDL_GetTicks(); // in miliseconds
@@ -49,7 +49,7 @@ void init()
 		throw("SDL failed to initialise");
 	}
 
-	window = SDL_CreateWindow("SDL2 Example!!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN);
+	window = SDL_CreateWindow("SDL2 Example!!", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH, SCREEN_HEIGHT, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
 
 	if (window == nullptr)
 	{
@@ -58,6 +58,11 @@ void init()
 	}
 
 	renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+	
+	if(!SDL_RenderSetLogicalSize(renderer, 640, 480))
+	{
+		std::cout << SDL_GetError() << std::endl;
+	}
 	
 	if (renderer == nullptr)
 	{
@@ -76,7 +81,7 @@ void init()
 	
 	//This represents where on the screen we will put the circle texture and it's size, 
 	//this will initialise it at the top left and the image will be squished to 15 x 15
-	positionRect = {(SCREEN_WIDTH / 2) - 7,  // X position - this is overcomplicated but it just puts the circle in the center of the screen.
+	positionRect = {(640 / 2) - 7,  // X position - this is overcomplicated but it just puts the circle in the center of the screen.
 					0,                       // Y position - sets the circle at the top of the screen 
 					15,                      // Sets the height of the circle
 					15};                     // Sets the weidth of the circle
@@ -88,6 +93,14 @@ void input()
 	{
 		quit = true;
 	}
+
+
+	if (event->window.event == SDL_WINDOWEVENT_RESIZED)
+	{
+		SDL_GetWindowSize(window, &SCREEN_WIDTH, &SCREEN_HEIGHT); 
+		std::cout << "The window was resized: " <<  SCREEN_WIDTH << std::endl;
+	}
+
 
 	if (event->type == SDL_KEYDOWN)
 	{
@@ -115,7 +128,7 @@ void update(double dt)
 		falling = true;
 	};
 
-	if (positionRect.y >= (SCREEN_HEIGHT - positionRect.h))
+	if (positionRect.y >= (480 - positionRect.h))
 	{	
 		falling = false;
 	};
@@ -136,6 +149,9 @@ void update(double dt)
 
 void render()
 {
+	//Sets a background color for the scene
+	SDL_SetRenderDrawColor(renderer, 91, 10, 145, 255);
+
 	//clears previous frame.
 	SDL_RenderClear(renderer);
 	
