@@ -48,6 +48,7 @@ SDL_Texture* loadTexture(const std::string &file, SDL_Renderer *ren)
 	if (texture == nullptr)
 	{
 		std::cout << "Could not load texture" << std::endl;
+		std::cout << IMG_GetError() << std::endl;
 	}
 	return texture;
 }
