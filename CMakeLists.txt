@@ -34,7 +34,6 @@ message(STATUS "######------ CMAKE_BINARY_DIR set to: ${CMAKE_BINARY_DIR}   ----
 
 ##TODO, make this platform and version agnostic
 add_custom_target(SDL2CopyBinaries
-
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/SDL2-2.0.14/lib/x64/SDL2.dll ${CMAKE_BINARY_DIR}/Debug
     COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/SDL2_image-2.0.5/lib/x64/SDL2_image.dll ${CMAKE_BINARY_DIR}/Debug
 )
@@ -42,7 +41,8 @@ add_custom_target(SDL2CopyBinaries
 message(STATUS "######------ Checking environment ------######")
 
 if (MSVC)
-    
+
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${EXECUTABLE_NAME})
     message(STATUS "######------ Setting MSVC flags   ------######")
 	
     if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
