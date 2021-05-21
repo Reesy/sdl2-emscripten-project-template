@@ -1,7 +1,6 @@
 # SDL2_VSCODE_PROJECT_TEMPLATE
 
-This is an example project which will let you create SDL2 projects quickly, it has a very simple CMake build system.
-
+This is an example project which will let you create SDL2 projects quickly, it has a very simple CMake build system but can be built manually.
 
 
 How to clone:
@@ -10,7 +9,19 @@ How to clone:
 git clone https://github.com/Reesy/sdl2_vscode_project_template
 ```
 
-This project has a dependency on SDL2 and SDL_image, when building natively these dependencies must be installed on the target machine and they can be discovered through the FindSDL cmake files. When building through emscripten the SDL and SDL2 ports are required (they should exist by default)
+This project has a dependency on SDL2 and SDL_image (which I have bundled under /libs) but can be found at libsdl.org.
+
+Manually building with MinGW for 32bit:
+
+```
+g++ ../src/main.cpp -o testApp \
+    -I ../libs/mingw/SDL2-2.0.14/i686-w64-mingw32/include/SDL2  \
+    -I ../libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/include/SDL2 \
+    -L ../libs/mingw/SDL2-2.0.14/i686-w64-mingw32/lib/ \
+    -L ../libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/lib/ \
+    -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
+```
+
 
 <dl>
     <dt> Requirements<dt>
