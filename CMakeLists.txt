@@ -22,26 +22,45 @@ if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     include_directories(${SDL2_INCLUDE_DIR})
 endif()
 
+if (MINGW)
+    link_directories("${PROJECT_SOURCE_DIR}/libs/mingw/SDL2-2.0.14/i686-w64-mingw32/lib/" "${PROJECT_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/lib/")
+endif()
+
 add_executable(${EXECUTABLE_NAME} ${MY_SOURCES})
 
-file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
-
+if (MINGW)
+    file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR}/dist)
+else()
+    file(COPY ${MY_RESOURCES} DESTINATION ${CMAKE_BINARY_DIR})
+endif()
 
 message(STATUS "######------ CMAKE_SOURCE_DIR set to: ${CMAKE_SOURCE_DIR}   ------######")
 
 message(STATUS "######------ CMAKE_BINARY_DIR set to: ${CMAKE_BINARY_DIR}   ------######")
 
 
-##TODO, make this platform and version agnostic
-add_custom_target(SDL2CopyBinaries
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2-2.0.14/lib/x64/SDL2.dll ${CMAKE_BINARY_DIR}/Debug
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/SDL2_image.dll ${CMAKE_BINARY_DIR}/Debug
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libjpeg-9.dll ${CMAKE_BINARY_DIR}/Debug
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libpng16-16.dll ${CMAKE_BINARY_DIR}/Debug
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libtiff-5.dll ${CMAKE_BINARY_DIR}/Debug
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libwebp-7.dll ${CMAKE_BINARY_DIR}/Debug
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/zlib1.dll ${CMAKE_BINARY_DIR}/Debug
-)
+if (MSVC)
+    add_custom_target(setup
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2-2.0.14/lib/x64/SDL2.dll ${CMAKE_BINARY_DIR}/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/SDL2_image.dll ${CMAKE_BINARY_DIR}/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libjpeg-9.dll ${CMAKE_BINARY_DIR}/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libpng16-16.dll ${CMAKE_BINARY_DIR}/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libtiff-5.dll ${CMAKE_BINARY_DIR}/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/libwebp-7.dll ${CMAKE_BINARY_DIR}/Debug
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/vs2019/SDL2_image-2.0.5/lib/x64/zlib1.dll ${CMAKE_BINARY_DIR}/Debug
+    )
+elseif (MINGW)
+    add_custom_target(setup
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2-2.0.14/i686-w64-mingw32/bin/SDL2.dll ${CMAKE_BINARY_DIR}/dist
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/bin/SDL2_image.dll ${CMAKE_BINARY_DIR}/dist
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/bin/libjpeg-9.dll  ${CMAKE_BINARY_DIR}/dist
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/bin/libpng16-16.dll ${CMAKE_BINARY_DIR}/dist
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/bin/libtiff-5.dll ${CMAKE_BINARY_DIR}/dist
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/bin/libwebp-7.dll ${CMAKE_BINARY_DIR}/dist
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/bin/zlib1.dll ${CMAKE_BINARY_DIR}/dist
+    )
+    add_dependencies(${EXECUTABLE_NAME} setup)
+endif()
 
 message(STATUS "######------ Checking environment ------######")
 
@@ -63,7 +82,7 @@ elseif( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     
     message(STATUS "######------ Setting Emescripten configs   ------######")
     
-    set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"png\"]' -s USE_FREETYPE=1 --preload-file resources/example_texture.png")
+    set(USE_FLAGS "-s USE_SDL=2 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='[\"png\"]' -s USE_FREETYPE=1 --preload-file resources/")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${USE_FLAGS}")
     file(COPY "index.html" DESTINATION ${CMAKE_BINARY_DIR})
     file(COPY "server.py" DESTINATION ${CMAKE_BINARY_DIR})
@@ -80,6 +99,9 @@ endif()
 
 if( ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     target_link_libraries(${EXECUTABLE_NAME})
+elseif(MINGW)
+    target_link_libraries(${EXECUTABLE_NAME} mingw32 SDL2main SDL2 SDL2_image)
+    set_target_properties(${EXECUTABLE_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/dist )
 else()
-    target_link_libraries(${EXECUTABLE_NAME} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} ${SDL2CopyBinaries})
+    target_link_libraries(${EXECUTABLE_NAME} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARY} )
 endif()
