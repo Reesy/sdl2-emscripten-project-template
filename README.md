@@ -73,3 +73,6 @@ Emscripten command (manually):
 Credit for the code in main from: 
     1. http://main.lv/writeup/web_assembly_sdl_example.md#toc-1   
     2. https://www.willusher.io/sdl2%20tutorials/2013/08/27/lesson-5-clipping-sprite-sheets 
+
+Used httplib: 
+https://github.com/yhirose/cpp-httplib

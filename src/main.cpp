@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string> 
 #include <iostream>
+#include "httplib.h"
 
 #if __EMSCRIPTEN__
 	#include <emscripten/emscripten.h>
@@ -212,11 +213,34 @@ void mainLoop()
 	}
 }
 
+
+void sendMessage()
+{
+	httplib::Client  cli("localhost", 8000);
+
+	if (auto res = cli.Get("/api/v1/test1")) 
+	{
+		if (res->status == 200) 
+		{
+			std::cout << "Response was 200" << std::endl;
+			std::cout << res->body << std::endl;
+		}
+		else
+		{
+			std::cout << "Something else happened" << std::endl;
+		}
+	}
+	else {
+		auto err = res.error();
+		std::cout << "Server response is: " << err << std::endl;
+	}
+};
+
 int main(int, char**)
 {
 	init();
 
-
+	sendMessage();
 	//When creating a native app (.exe on windows or sh on OSX/Linux this will directly call mainLoop. when running in browser emscripten deals with calls to the main method)
 	#if __EMSCRIPTEN__
 		emscripten_set_main_loop(mainLoop, -1, 1);

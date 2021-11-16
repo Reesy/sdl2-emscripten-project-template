@@ -20,6 +20,8 @@ if (NOT ${CMAKE_SYSTEM_NAME} MATCHES "Emscripten")
     include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 
     include_directories(${SDL2_INCLUDE_DIR})
+
+    include_directories(${PROJECT_SOURCE_DIR}/libs/httplib)
 endif()
 
 if (MINGW)
