@@ -1,34 +1,64 @@
-# SDL2_VSCODE_PROJECT_TEMPLATE
+# SDL2-Emscripten-project-template
 
-This is an example project which will let you create SDL2 projects quickly, it has a very simple CMake build system but can be built manually.
+A C++ project template using the SDL2 & Emscripten libraries. This template will allow you to:
 
+1. Build and run your own video game on your machine (with the use of CMAKE) 
+2. Build and run your own video game in a browser (with the use of CMAKE)
+3. Serve your game to the browser - using python httpserver for simplicity
+4. Debug and inspect your video game using vscode thanks to the bundles settings in .vscode
 
-How to clone:
+|  Platform         |  Status   |
+| ----------------- | --------- |
+| Windows - MingGW  |   ✔️      |
+| Windows - MSVC    |   ✔️      |
+| OSX               |   ✔️      |
+| Browser - Emscripten  | ✔️   |
+
+This project comes with a barebone example that just renders a circle that moves up and down.
+
+It has a common video game flow:
+
+_Pseudocode_
+```
+ > initialize
+ 
+ > Game loop
+     -> update state
+     -> render
+     -> input
+
+ -> exit/cleanup
+```
+
+## Cloning: 
+
+Through CLI: 
 
 ```
-git clone https://github.com/Reesy/sdl2_vscode_project_template
+git clone https://github.com/Reesy/sdl2-emscripten-project-template
 ```
 
+
+Graphically (this will also generate a project on your profile) 
+
+![image](https://user-images.githubusercontent.com/5430483/159441936-843331ee-820d-4dad-af03-f1a1d31b3383.png)
+
+
+## Building: 
 This project has a dependency on SDL2 and SDL_image (which I have bundled under /libs) but can be found at libsdl.org.
-
-Manually building with MinGW for 32bit:
-
-```
-g++ ../src/main.cpp -o testApp \
-    -I ../libs/mingw/SDL2-2.0.14/i686-w64-mingw32/include/SDL2  \
-    -I ../libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/include/SDL2 \
-    -L ../libs/mingw/SDL2-2.0.14/i686-w64-mingw32/lib/ \
-    -L ../libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/lib/ \
-    -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
-```
-
 
 <dl>
     <dt> Requirements<dt>
     <dd style='color:red'> CMake -- required to build this project </dd>
 <dl>
 
-To build a release (on OSX):
+To build a Visual Studios project (the .vcxproj file will be placed in the sdl2-emscripten-project-template/build folder)
+
+```
+cmake . -B build
+```
+    
+To build a release on OSX or MinGW (if using ```-G "MinGW Makefiles"```):
 
 ```
 cmake . -B build
@@ -50,6 +80,33 @@ make
 <div style='color:red'> The 'resources' folder needs to exist in the same directory as the .exe file (on OSX it will be automatically bundled into the app</div>
 
 
+## Manual building without CMake    
+
+Manually building with MinGW for 32bit:
+
+```
+g++ ../src/main.cpp -o testApp \
+    -I ../libs/mingw/SDL2-2.0.14/i686-w64-mingw32/include/SDL2  \
+    -I ../libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/include/SDL2 \
+    -L ../libs/mingw/SDL2-2.0.14/i686-w64-mingw32/lib/ \
+    -L ../libs/mingw/SDL2_image-2.0.5/i686-w64-mingw32/lib/ \
+    -lmingw32 -lSDL2main -lSDL2 -lSDL2_image
+```
+
+Manually building with emscripten
+```
+    emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -O3 -o index.js
+```
+    
+    
+## Building and hosting on the web
+
+Serving the file using httpserver with Python 2: ```python -m SimpleHTTPServer 8080``` 
+
+    
+    
+## Debugging
+    
 This project comes with a .vscode folder prebundled to make debugging easier, for this to work two plugins are necessary 
 
 <dl>
@@ -62,12 +119,7 @@ This project comes with a .vscode folder prebundled to make debugging easier, fo
 
 SDL2 can be found https://www.libsdl.org/
 
-
-Emscripten command (manually):
-    ```emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -O3 -o index.js```
-
-    running in small httpserver with Python 2: ```python -m SimpleHTTPServer 8080``` 
-
+ 
 
 
 Credit for the code in main from: 
