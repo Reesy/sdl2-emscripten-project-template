@@ -119,6 +119,8 @@ FIND_PATH(SDL2_INCLUDE_DIR SDL.h
 	/opt/local # DarwinPorts
 	/opt/csw # Blastwave
 	/opt
+	${PROJECT_SOURCE_DIR}/libs/mingw/SDL2-2.0.14/i686-w64-mingw32/include
+	${PROJECT_SOURCE_DIR}/libs/mingw/SDL2-2.0.14/x86_64-w64-mingw32/include
 )
 
 # Lookup the 64 bit libs on x64
@@ -135,6 +137,8 @@ IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 		/opt/local
 		/opt/csw
 		/opt
+		${PROJECT_SOURCE_DIR}/libs/mingw/SDL2-2.0.14/x86_64-w64-mingw32/lib/
+		${PROJECT_SOURCE_DIR}/libs/vs2019/SDL2-2.0.14/lib/x64
 	)
 # On 32bit build find the 32bit libs
 ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
@@ -150,6 +154,8 @@ ELSE(CMAKE_SIZEOF_VOID_P EQUAL 8)
 		/opt/local
 		/opt/csw
 		/opt
+		${PROJECT_SOURCE_DIR}/libs/mingw/SDL2-2.0.14/i686-w64-mingw32/lib/
+		${PROJECT_SOURCE_DIR}/libs/vs2019/SDL2-2.0.14/lib/x86
 	)
 ENDIF(CMAKE_SIZEOF_VOID_P EQUAL 8)
 

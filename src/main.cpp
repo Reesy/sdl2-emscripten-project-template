@@ -12,6 +12,7 @@
 	#include <SDL_image.h>
 #endif
 
+#undef main //Needed for windows. 
 #if __EMSCRIPTEN__
 
 EM_JS(int, canvas_get_width, (), {
