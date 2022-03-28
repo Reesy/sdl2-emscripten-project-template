@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <string> 
 #include <iostream>
-#include "httplib.h"
+
 
 #if __EMSCRIPTEN__
 	#include <emscripten/emscripten.h>
 	#include <SDL2/SDL.h>
 	#include <SDL2/SDL_image.h>
 #else
+	#include "httplib.h"
 	#include <SDL.h>
 	#include <SDL_image.h>
 #endif
@@ -214,7 +215,7 @@ void mainLoop()
 	}
 }
 
-
+#if !__EMSCRIPTEN__
 void sendMessage()
 {
 	httplib::Client  cli("localhost", 8000);
@@ -236,16 +237,16 @@ void sendMessage()
 		std::cout << "Server response is: " << err << std::endl;
 	}
 };
-
+#endif
 int main(int, char**)
 {
 	init();
 
-	sendMessage();
 	//When creating a native app (.exe on windows or sh on OSX/Linux this will directly call mainLoop. when running in browser emscripten deals with calls to the main method)
 	#if __EMSCRIPTEN__
 		emscripten_set_main_loop(mainLoop, -1, 1);
 	#else
+		sendMessage();
 		while (quit != true)
 		{
 			mainLoop();
