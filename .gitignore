@@ -2,6 +2,7 @@ build
 embuild
 wbuild
 mingwbuild
+vsbuild
 CMakeFiles
 Makefile
 cmake_install.cmake
