@@ -13,6 +13,7 @@ A C++ project template using the SDL2 & Emscripten libraries. This template will
 | Windows - MSVC    |   ✔️      |
 | OSX               |   ✔️      |
 | Browser - Emscripten  | ✔️   |
+| Browser - Emscripten (with docker) | ✔️   |
 
 This project comes with a barebone example that just renders a circle that moves up and down.
 
