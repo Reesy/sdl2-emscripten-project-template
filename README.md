@@ -7,6 +7,13 @@ A C++ project template using the SDL2 & Emscripten libraries. This template will
 3. Serve your game to the browser - using python httpserver for simplicity
 4. Debug and inspect your video game using vscode thanks to the bundles settings in .vscode
 
+A live example can be run here [Click me!](http://ex2.jim.wales/)
+
+
+<img src="example_pic.png" style="width: 500px" > 
+
+## Supported platforms
+
 |  Platform         |  Status   |
 | ----------------- | --------- |
 | Windows - MingGW  |   ✔️      |
