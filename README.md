@@ -69,6 +69,8 @@ To build for browser with Emscripten (requires emscripten installed and on the p
 
 ```
 emcmake cmake . -B build 
+ 
+cd build && make
 ```
 
 To build with debug symbols (on OSX):
@@ -95,16 +97,36 @@ g++ ../src/main.cpp -o testApp \
 
 Manually building with emscripten
 ```
-    emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -O3 -o index.js
+emcc src/main.cpp -s WASM=1 -s USE_SDL=2 -s USE_SDL_IMAGE=2 -O3 -o index.js
 ```
     
     
 ## Building and hosting on the web
-
+ 
+_This will create a make file and copy a basic index.html and python script to the embuild folder_
+``` 
+emcmake cmake -B embuild . 
+cd embuild && make
+``` 
 Serving the file using httpserver with Python 2: ```python -m SimpleHTTPServer 8080``` 
 
-    
-    
+## Hosting with docker  
+### Building the image 
+_The emscripten build must me run first_
+
+```
+emcmake cmake -B embuild . 
+cd embuild && make
+docker build -t <desired_image_name> .
+``` 
+ 
+### Running the image
+```
+docker run --name <desired_container_name> -p <desired_port>:3000 <desired_image_name> 
+```
+
+You will then be able to view the application on ```http://localhost:<desired_port>``` i.e http://localhost:3000
+ 
 ## Debugging
     
 This project comes with a .vscode folder prebundled to make debugging easier, for this to work two plugins are necessary 
